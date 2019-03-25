@@ -13,7 +13,8 @@ joining a group, but this handles also removing those members).
 It does this by having a custom attribute in your G Suite directory that
 corresponds to a GitLab username, and inviting those users to your GitLab
 group if they are not already a member. If you have any members of your group
-who do not have a username recorded against a corresponding 
+who do not have a username recorded against a corresponding user in your G
+Suite Directory will be removed from your group.
 
 Getting started
 ---------------
@@ -39,7 +40,7 @@ Getting started
    
 4. Enable the service account to read from your Directory. Go to [Manage API client access](https://admin.google.com/AdminHome?chromeless=1#OGX:ManageOauthClients)
    and add an entry with the Client Name being the ID (long number string) of
-   the service acconut, and the API scope `https://www.googleapis.com/auth/admin.directory.user.readonly`.
+   the service account, and the API scope `https://www.googleapis.com/auth/admin.directory.user.readonly`.
 
 5. Use the G Suite users panel to populate the appropriate users with their
    GitLab usernames.
