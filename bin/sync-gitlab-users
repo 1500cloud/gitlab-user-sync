@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+# gitlab-user-sync: synchronises users between G Suite and a GitLab instance
+# Copyright (C) 2019 1500 Services Ltd
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import logging
+import os
+import sys
+
+from gitlab_user_sync.main import main
+
+
+def configure_logger(loglevel):
+    console = logging.StreamHandler()
+    console.setFormatter(logging.Formatter('[%(asctime)s] %(name)-12s %(levelname)-8s %(message)s'))
+    logging.getLogger().addHandler(console)
+    logging.getLogger('gitlab_user_sync').setLevel(loglevel)
+    logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
+    return logging.getLogger('gitlab_user_sync')
+
+
+LOGGER = configure_logger(logging.DEBUG if os.environ.get('DEBUG', 0) == 1 else logging.INFO)
+
+
+try:
+    google_credentials_path = os.environ.get('GOOGLE_CREDENTIALS_PATH')
+    google_administrator_account = os.environ.get('GOOGLE_ADMINISTRATOR_ACCOUNT')
+    google_customer_id = os.environ.get('GOOGLE_CUSTOMER_ID')
+    gitlab_access_token = os.environ.get('GITLAB_ACCESS_TOKEN')
+    gitlab_group_id = os.environ.get('GITLAB_GROUP_ID')
+
+    valid = True
+    if google_credentials_path is None:
+        LOGGER.error('GOOGLE_CREDENTIALS_PATH has not been set')
+        valid = False
+    elif not os.path.isfile(google_credentials_path):
+        LOGGER.error('GOOGLE_CREDENTIALS_PATH does not refer to a valid file')
+
+    if google_administrator_account is None:
+        LOGGER.error('GOOGLE_ADMINISTRATOR_ACCOUNT is not set')
+        valid = False
+
+    if google_customer_id is None:
+        LOGGER.error('GOOGLE_CUSTOMER_ID is not set')
+        valid = False
+
+    if gitlab_access_token is None:
+        LOGGER.error('GITLAB_ACCESS_TOKEN is not set')
+        valid = False
+
+    if gitlab_group_id is None:
+        LOGGER.error('GITLAB_GROUP_ID is not set')
+        valid = False
+
+    if valid:
+        main(google_credentials_path,
+             google_administrator_account,
+             google_customer_id,
+             gitlab_access_token,
+             gitlab_group_id)
+    else:
+        sys.exit(1)
+except:
+    logging.exception("Error occurred whilst syncing users")
+    sys.exit(1)
